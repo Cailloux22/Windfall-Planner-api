@@ -21,7 +21,7 @@ Node 24 LTS (`.nvmrc`), Docker for PostgreSQL 18.
 
 ```bash
 npm run setup        # env:init (.env from .env.example) + db:up + db:migrate
-npm run dev          # tsx watch, http://localhost:3000/v1
+npm run dev          # predev starts Docker Desktop + the `db` container if DATABASE_URL (local) is unreachable; then tsx watch, http://localhost:3000/v1
 npm run build && npm start
 npm run typecheck
 npm run lint

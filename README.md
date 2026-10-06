@@ -77,7 +77,7 @@ Deux modèles : [.env.example](.env.example) pour le développement (copié par 
 | Commande | Effet |
 |---|---|
 | `npm run setup` | `env:init` + `db:up` + `db:migrate` |
-| `npm run dev` | Serveur en mode watch (tsx) |
+| `npm run dev` | Démarre la base locale si elle est injoignable (`predev`), puis le serveur en mode watch (tsx) |
 | `npm run build` | Génère le client Prisma et compile vers `dist/` |
 | `npm start` | Lance `dist/main/index.js` |
 | `npm run typecheck` / `npm run lint` | Vérification de types / ESLint |
