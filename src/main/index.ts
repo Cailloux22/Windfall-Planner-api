@@ -1,6 +1,27 @@
 import { env } from '#shared/env/index';
 import { prismaClient } from '#shared/prisma/index';
 import { createApp } from '#main/app';
+import HealthUsecases from '#usecases/health';
+import { DB_CONNECT_TIMEOUT_MS } from '#constants/limits';
+
+// RT_70 « Démarrage » : sans base joignable, le serveur s'arrête avant
+// d'écouter. Seul le code d'erreur est journalisé : le message de Prisma ou
+// de pg peut contenir l'adresse de connexion.
+try {
+  await new HealthUsecases().assertDatabaseReachable();
+} catch (error) {
+  // pg signale le délai dépassé par une Error sans code.
+  const code = (error as { code?: unknown }).code;
+  const timedOut = error instanceof Error && /connection timeout/.test(error.message);
+  const cause = typeof code === 'string'
+    ? code
+    : timedOut
+      ? `aucune connexion en ${DB_CONNECT_TIMEOUT_MS / 1000} s`
+      : error instanceof Error ? error.name : typeof error;
+  console.error(`Base de données injoignable (${cause}) : arrêt du serveur.`);
+  await prismaClient.$disconnect().catch(() => undefined);
+  process.exit(1);
+}
 
 const app = createApp();
 

@@ -1,6 +1,6 @@
 {
   "name": "windfall-planner-api",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "private": true,
   "description": "Serveur de synchronisation de Windfall Planner (RT_09, contrat openapi.yml v1.1.0)",
   "type": "module",

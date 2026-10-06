@@ -1,6 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '#generated/prisma/client';
 import { env } from '#shared/env/index';
+import { DB_CONNECT_TIMEOUT_MS } from '#constants/limits';
 
 export { Prisma, PrismaClient };
 
@@ -10,8 +11,13 @@ export { Prisma, PrismaClient };
 export type TransactionClient = Prisma.TransactionClient;
 export type DbClient = PrismaClient | TransactionClient;
 
+// RT_70 « Démarrage » : une base qui ne répond pas fait échouer la connexion
+// en 5 secondes au lieu de la laisser en attente sans fin.
 export const prismaClient = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: env.DATABASE_URL }),
+  adapter: new PrismaPg({
+    connectionString: env.DATABASE_URL,
+    connectionTimeoutMillis: DB_CONNECT_TIMEOUT_MS,
+  }),
 });
 
 // Prisma attend des octets sur un ArrayBuffer non partagé.

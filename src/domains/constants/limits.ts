@@ -34,3 +34,6 @@ export const IDEMPOTENCY_RETENTION_HOURS = 24;
 
 // RT_67 : jeton d'appareil de 256 bits.
 export const DEVICE_TOKEN_BYTES = 32;
+
+// RT_70 « Démarrage » : délai d'établissement d'une connexion à la base.
+export const DB_CONNECT_TIMEOUT_MS = 5_000;
