@@ -1,0 +1,93 @@
+// RT_70 : schéma Prisma des quatre tables du serveur de synchronisation.
+// La référence est specification/schema.sql : contraintes CHECK et index
+// partiels ne s'expriment pas ici et ne vivent que dans le SQL de migration
+// (prisma/migrations/*_init/migration.sql).
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  runtime             = "nodejs"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// RG_50, RG_52, RT_70 : un compte joueur.
+model User {
+  id             String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  // RG_50 : email normalisé (espaces retirés, minuscules) ; RT_69 : 254 caractères.
+  email          String   @unique(map: "users_email_unique") @db.VarChar(254)
+  // RT_67 : hash argon2id (format PHC).
+  passwordHash   String   @map("password_hash")
+  // RT_70 : compteur de révision du compte.
+  revision       BigInt   @default(0)
+  // RT_70/RT_68 : plus haute révision de trace de suppression purgée.
+  purgedRevision BigInt   @default(0) @map("purged_revision")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  deviceTokens    DeviceToken[]
+  records         Record[]
+  idempotencyKeys IdempotencyKey[]
+
+  @@map("users")
+}
+
+// RT_67, RG_53 : jeton d'appareil permanent, stocké haché.
+model DeviceToken {
+  tokenHash      Bytes    @id @map("token_hash")
+  userId         String   @map("user_id") @db.Uuid
+  deviceId       String   @map("device_id") @db.Uuid
+  deviceName     String   @map("device_name") @db.VarChar(80)
+  devicePlatform String   @map("device_platform") @db.VarChar(10)
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([userId, deviceId], map: "device_tokens_user_device_unique")
+  @@map("device_tokens")
+}
+
+// RT_68, RT_70 : listes et déploiements versionnés.
+model Record {
+  userId                String    @map("user_id") @db.Uuid
+  resourceType          String    @map("resource_type") @db.VarChar(10)
+  id                    String    @db.VarChar(100)
+  revision              BigInt
+  deleted               Boolean   @default(false)
+  content               Json?
+  listId                String?   @map("list_id") @db.VarChar(100)
+  opponentDispositionId String?   @map("opponent_disposition_id") @db.VarChar(100)
+  boardId               String?   @map("board_id") @db.VarChar(100)
+  authorDeviceId        String    @map("author_device_id") @db.Uuid
+  authorDeviceName      String    @map("author_device_name") @db.VarChar(80)
+  authorDevicePlatform  String    @map("author_device_platform") @db.VarChar(10)
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
+  // RT_68/RG_54 : date de suppression fixée par l'appareil, affichée dans les conflits.
+  clientDeletedAt       DateTime? @map("client_deleted_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([userId, resourceType, id])
+  @@unique([userId, revision], map: "records_user_revision_idx")
+  @@map("records")
+}
+
+// RT_68 : réponses rejouables des poussées et résolutions.
+model IdempotencyKey {
+  userId         String   @map("user_id") @db.Uuid
+  key            String   @db.Uuid
+  requestHash    Bytes    @map("request_hash")
+  responseStatus Int      @map("response_status") @db.SmallInt
+  responseBody   Json     @map("response_body")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([userId, key])
+  @@index([createdAt], map: "idempotency_keys_created_at_idx")
+  @@map("idempotency_keys")
+}

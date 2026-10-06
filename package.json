@@ -1,0 +1,110 @@
+{
+  "name": "windfall-planner-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Serveur de synchronisation de Windfall Planner (RT_09, contrat openapi.yml v1.1.0)",
+  "type": "module",
+  "engines": {
+    "node": ">=24.21.0 <25"
+  },
+  "imports": {
+    "#main/*": {
+      "development": "./src/main/*.ts",
+      "default": "./dist/main/*.js"
+    },
+    "#routes/*": {
+      "development": "./src/routes/*.ts",
+      "default": "./dist/routes/*.js"
+    },
+    "#controllers/*": {
+      "development": "./src/adapter/controllers/*.ts",
+      "default": "./dist/adapter/controllers/*.js"
+    },
+    "#usecases/*": {
+      "development": "./src/adapter/usecases/*.ts",
+      "default": "./dist/adapter/usecases/*.js"
+    },
+    "#repositories/*": {
+      "development": "./src/adapter/repositories/*.ts",
+      "default": "./dist/adapter/repositories/*.js"
+    },
+    "#models/*": {
+      "development": "./src/domains/models/*.ts",
+      "default": "./dist/domains/models/*.js"
+    },
+    "#errors/*": {
+      "development": "./src/domains/errors/*.ts",
+      "default": "./dist/domains/errors/*.js"
+    },
+    "#constants/*": {
+      "development": "./src/domains/constants/*.ts",
+      "default": "./dist/domains/constants/*.js"
+    },
+    "#schemas/*": {
+      "development": "./src/interfaces/http/*.ts",
+      "default": "./dist/interfaces/http/*.js"
+    },
+    "#middlewares/*": {
+      "development": "./src/middlewares/*.ts",
+      "default": "./dist/middlewares/*.js"
+    },
+    "#shared/*": {
+      "development": "./src/shared/*.ts",
+      "default": "./dist/shared/*.js"
+    },
+    "#generated/*": {
+      "development": "./src/generated/*.ts",
+      "default": "./dist/generated/*.js"
+    }
+  },
+  "scripts": {
+    "dev": "tsx watch --conditions=development src/main/index.ts",
+    "build": "prisma generate && tsc -p tsconfig.build.json",
+    "start": "node dist/main/index.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:reset": "prisma migrate reset",
+    "db:drift": "node scripts/check-drift.mjs",
+    "purge": "node dist/jobs/purge.js",
+    "purge:dev": "tsx --conditions=development src/jobs/purge.ts",
+    "env:init": "node scripts/env-init.mjs",
+    "setup": "npm run env:init && npm run db:up && npm run db:migrate",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
+    "argon2": "^0.45.1",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.5",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "pg": "^8.23.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.19.1",
+    "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "ajv": "^8.20.0",
+    "ajv-formats": "^3.0.1",
+    "eslint": "^10.12.0",
+    "prisma": "^7.10.0",
+    "supertest": "^7.3.1",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.1",
+    "vitest": "^5.0.3",
+    "yaml": "^2.9.1"
+  }
+}
