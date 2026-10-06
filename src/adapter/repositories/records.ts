@@ -91,17 +91,15 @@ export default class RecordsRepository {
     return rows.map(toStored);
   }
 
-  // RG_54/RT_68 « même plateau créé deux fois » : déploiement vivant du même
-  // triplet écrit dans l'intervalle (since, upTo], hors appareil `excludeDevice`
-  // et hors `excludeId` ; le plus récent.
-  async findTripletDeployment(
+  // RG_54/RT_68 « même plateau créé deux fois » : déploiements vivants du
+  // même triplet écrits après `since`, du plus récent au plus ancien.
+  async findTripletDeployments(
     tx: DbClient,
     userId: string,
     triplet: { listId: string; opponentDispositionId: string; boardId: string },
-    range: { since: bigint; upTo: bigint },
-    exclude: { deviceId: string; id: string },
-  ): Promise<StoredRecord | null> {
-    const row = await tx.record.findFirst({
+    since: bigint,
+  ): Promise<StoredRecord[]> {
+    const rows = await tx.record.findMany({
       where: {
         userId,
         resourceType: 'deployment',
@@ -109,13 +107,11 @@ export default class RecordsRepository {
         listId: triplet.listId,
         opponentDispositionId: triplet.opponentDispositionId,
         boardId: triplet.boardId,
-        revision: { gt: range.since, lte: range.upTo },
-        authorDeviceId: { not: exclude.deviceId },
-        id: { not: exclude.id },
+        revision: { gt: since },
       },
       orderBy: { revision: 'desc' },
     });
-    return row ? toStored(row) : null;
+    return rows.map(toStored);
   }
 
   // RT_70 : écriture d'un enregistrement vivant à la révision donnée ;
