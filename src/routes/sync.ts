@@ -1,14 +1,17 @@
 import { Router } from 'express';
+import ConflictsController from '#controllers/conflicts';
 import SyncController from '#controllers/sync';
-import { PUSH_MAX_BODY } from '#constants/limits';
+import { PUSH_MAX_BODY, RESOLVE_MAX_BODY } from '#constants/limits';
 import { auth } from '#middlewares/auth';
 import { idempotency } from '#middlewares/idempotency';
 import { jsonBody } from '#middlewares/json-body';
 import { perDeviceToken } from '#middlewares/rate-limit';
+import { resolveBodySchema } from '#schemas/sync/conflicts.schema';
 import { pullQuerySchema, pushBodySchema } from '#schemas/sync/sync.schema';
 import { validate } from '#shared/zod/index';
 
 const controller = new SyncController();
+const conflicts = new ConflictsController();
 const routes = Router();
 
 routes.use(auth, perDeviceToken);
@@ -26,6 +29,15 @@ routes.post(
   validate({ body: pushBodySchema }),
   idempotency,
   controller.push,
+);
+
+// RG_11/RG_54/RT_68 : résolution d'un conflit, idempotente.
+routes.post(
+  '/conflicts/resolve',
+  jsonBody(RESOLVE_MAX_BODY),
+  validate({ body: resolveBodySchema }),
+  idempotency,
+  conflicts.resolve,
 );
 
 export default routes;
