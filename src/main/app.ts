@@ -9,6 +9,7 @@ import { logger } from '#middlewares/logger';
 import accountRoutes from '#routes/account';
 import authRoutes from '#routes/auth';
 import healthRoutes from '#routes/health';
+import syncRoutes from '#routes/sync';
 
 export function createApp(): Express {
   const app = express();
@@ -29,6 +30,7 @@ export function createApp(): Express {
   app.use(API_PREFIX, corsMiddleware, clientVersion, v1);
   v1.use('/auth', authRoutes);
   v1.use('/account', accountRoutes);
+  v1.use('/sync', syncRoutes);
 
   app.use((_req, res) => {
     res.status(404).end();
