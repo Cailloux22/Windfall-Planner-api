@@ -6,6 +6,8 @@ import { errorHandler } from '#errors/handler';
 import { clientVersion } from '#middlewares/client-version';
 import { corsMiddleware } from '#middlewares/cors';
 import { logger } from '#middlewares/logger';
+import accountRoutes from '#routes/account';
+import authRoutes from '#routes/auth';
 import healthRoutes from '#routes/health';
 
 export function createApp(): Express {
@@ -25,6 +27,8 @@ export function createApp(): Express {
   // RT_71 : CORS d'abord (les pré-vols OPTIONS s'y arrêtent), puis RT_69 :
   // version du client sur toutes les routes du contrat.
   app.use(API_PREFIX, corsMiddleware, clientVersion, v1);
+  v1.use('/auth', authRoutes);
+  v1.use('/account', accountRoutes);
 
   app.use((_req, res) => {
     res.status(404).end();
