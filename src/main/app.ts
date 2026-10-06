@@ -3,6 +3,8 @@ import helmet from 'helmet';
 import { env } from '#shared/env/index';
 import { API_PREFIX } from '#constants/server';
 import { errorHandler } from '#errors/handler';
+import { clientVersion } from '#middlewares/client-version';
+import { corsMiddleware } from '#middlewares/cors';
 import { logger } from '#middlewares/logger';
 import healthRoutes from '#routes/health';
 
@@ -20,7 +22,9 @@ export function createApp(): Express {
   app.use('/health', healthRoutes);
 
   const v1 = express.Router();
-  app.use(API_PREFIX, v1);
+  // RT_71 : CORS d'abord (les pré-vols OPTIONS s'y arrêtent), puis RT_69 :
+  // version du client sur toutes les routes du contrat.
+  app.use(API_PREFIX, corsMiddleware, clientVersion, v1);
 
   app.use((_req, res) => {
     res.status(404).end();

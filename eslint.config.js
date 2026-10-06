@@ -20,6 +20,17 @@ export default tseslint.config(
     },
   },
   {
+    // Les corps de réponse de supertest sont typés any ; leur forme est
+    // contrôlée par le validateur du contrat.
+    files: ['tests/**/*.ts'],
+    rules: {
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+    },
+  },
+  {
     files: ['**/*.js', '**/*.mjs'],
     extends: [tseslint.configs.disableTypeChecked],
     languageOptions: { globals: { console: 'readonly', process: 'readonly' } },

@@ -13,3 +13,8 @@ export type DbClient = PrismaClient | TransactionClient;
 export const prismaClient = new PrismaClient({
   adapter: new PrismaPg({ connectionString: env.DATABASE_URL }),
 });
+
+// Prisma attend des octets sur un ArrayBuffer non partagé.
+export function bytes(buffer: Buffer): Uint8Array<ArrayBuffer> {
+  return new Uint8Array(buffer);
+}
