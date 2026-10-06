@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { defaultServerConditions } from 'vite';
 import { defineConfig } from 'vitest/config';
 
-const testDatabaseUrl =
+export const TEST_DATABASE_URL =
   process.env.DATABASE_URL_TEST
   ?? 'postgresql://windfall:windfall@localhost:5433/windfall_test?schema=public';
 
@@ -16,7 +16,7 @@ export default defineConfig({
   test: {
     env: {
       NODE_ENV: 'test',
-      DATABASE_URL: testDatabaseUrl,
+      DATABASE_URL: TEST_DATABASE_URL,
       LOG_REQUESTS: 'false',
       CORS_ORIGINS: 'http://localhost:4200,https://localhost',
       MIN_CLIENT_VERSION: '0.0.5',
